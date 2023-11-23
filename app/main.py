@@ -68,9 +68,12 @@ class App(customtkinter.CTk):
         self.velocitySelect= customtkinter.CTkOptionMenu(self.leftFrame, values= wave_velocity_select_options, font= label_font)
         self.velocitySelect.grid(row=9, column= 0, padx= 15, pady=10, sticky= E+W+N+S)
 
+        self.panSwitch = customtkinter.CTkSwitch(self.leftFrame, font= label_font, text= "Directional Audio")
+        self.panSwitch.grid(row= 10 , column = 0, padx= 15, pady = 10, sticky= E+W+N+S)
+
         #Begin Button
-        self.button = customtkinter.CTkButton(self.leftFrame, text="Listen", font= label_font, command=self.button_callbck)
-        self.button.grid(row = 10, column=0, padx=15, pady=20, sticky = E+W)
+        self.button = customtkinter.CTkButton(self.leftFrame, text="Listen", font= label_font, command=self.start_button_callback)
+        self.button.grid(row = 11, column=0, padx=15, pady=20, sticky = E+W)
 
         #Right Frame 
         self.rightFrame = customtkinter.CTkFrame(self)
@@ -78,10 +81,12 @@ class App(customtkinter.CTk):
         self.rightFrame.rowconfigure(0, weight=1)
         self.rightFrame.columnconfigure(0, weight=1)
 
-    def button_callbck(self):
+    def start_button_callback(self):
         data_source = self.dataSelect.get()
         notes_column = self.noteSelect.get()
         velocity_column = self.velocitySelect.get()
+        pan_switch = self.panSwitch.get()
+        
         
 
 
