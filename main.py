@@ -107,8 +107,7 @@ class App(customtkinter.CTk):
         end_date= str(end_date.year)+"-"+str(end_date.month)+"-"+str(end_date.day)
         pan_switch = self.panSwitch.get()
         bpm = int(self.bpmSlider.get())
-        print("here", bpm)
-        
+    
         #Convert Using Dictionary later
         if note_column == "Height of Wave (Recommended)":
             note_column = "significantWaveHeight"
@@ -130,16 +129,7 @@ class App(customtkinter.CTk):
         if num>180:
             self.bpmSliderNum.config(placeholder_text= num)
         if num:
-            self.bpmSlider.set(int(num))
-            
-
-
-        
-
-
-        
-        
-
-
+            self.bpmSlider.set(int(num))    
+    
 app = App()
 app.mainloop()

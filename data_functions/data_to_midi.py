@@ -13,7 +13,6 @@ def df_to_midi(df, filename, note_column, velocity_column, time_column, bpm):
              'C4','D4','E4','G4','A4']
     vel_min = 40
     vel_max = 127
-    print(df)
     notes_vals = df[note_column].values
     times = df[time_column].values
     velocity_vals = df[velocity_column]  
