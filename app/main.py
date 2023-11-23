@@ -8,7 +8,7 @@ label_font = ("Helvetica", 16)
 
 data_select_options = ["San Fransisco's Waves (Buoy)", "Davis Air Quality (Purple Air Sensor)", "Temperature In Room"]
 wave_note_select_options = ["Height of Wave (Recommended)" , "Humidity", "Peak Period of Waves" , "Mean Period of Waves" ,  "Peak Direction of Wave"]
-wave_velocity_select_options = ["Mean Period of Waves" , "Height of Wave" , "Humidity", "Peak Period of Waves" , "Peak Direction of Wave"]
+wave_velocity_select_options = ["Peak Period of Waves (Recommended)" , "Height of Wave" , "Humidity", "Mean Period of Waves" , "Peak Direction of Wave"]
 
 
 class App(customtkinter.CTk):
@@ -52,17 +52,25 @@ class App(customtkinter.CTk):
 
         #Parameters For Music
 
-        #Label For Notes Select
+        #Label for notes
         self.noteLabel = customtkinter.CTkLabel(self.leftFrame, font= label_font, text= "Notes:", anchor= W)
         self.noteLabel.grid(row= 6, column = 0, padx=15, pady=0, sticky= E+W+N+S)
 
-        #Option menu for notw select parameter
+        #Label For Notes Select
         self.noteSelect = customtkinter.CTkOptionMenu(self.leftFrame, values = wave_note_select_options, font = label_font)
         self.noteSelect.grid(row = 7, column= 0, padx= 15, pady=10 , sticky= E+W+N+S)
 
+        #Label for velocity
+        self.velocityLabel= customtkinter.CTkLabel(self.leftFrame, font= label_font, text= "Veloctiy:", anchor= W)
+        self.velocityLabel.grid(row=8, column= 0, padx= 15, pady= 0, sticky= E+W+N+S)
+        
+        #Option menu for velocity select parameter
+        self.velocitySelect= customtkinter.CTkOptionMenu(self.leftFrame, values= wave_velocity_select_options, font= label_font)
+        self.velocitySelect.grid(row=9, column= 0, padx= 15, pady=10, sticky= E+W+N+S)
+
         #Begin Button
-        self.button = customtkinter.CTkButton(self.leftFrame, text="Create Music", font= label_font, command=self.button_callbck)
-        self.button.grid(row = 8, column=0, padx=15, pady=20, sticky = E+W)
+        self.button = customtkinter.CTkButton(self.leftFrame, text="Listen", font= label_font, command=self.button_callbck)
+        self.button.grid(row = 10, column=0, padx=15, pady=20, sticky = E+W)
 
         #Right Frame 
         self.rightFrame = customtkinter.CTkFrame(self)
@@ -71,7 +79,11 @@ class App(customtkinter.CTk):
         self.rightFrame.columnconfigure(0, weight=1)
 
     def button_callbck(self):
-        print("button clicked")
+        data_source = self.dataSelect.get()
+        notes_column = self.noteSelect.get()
+        velocity_column = self.velocitySelect.get()
+        
+
 
 app = App()
 app.mainloop()
