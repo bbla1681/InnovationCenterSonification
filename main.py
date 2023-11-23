@@ -1,7 +1,9 @@
 import tkinter as tk
 from tkinter import *
-from tkcalendar import Calendar, DateEntry
+from tkcalendar import DateEntry
 import customtkinter
+from data_functions import data_to_midi
+
 
 date_font = ("Helvetica", 24)
 label_font = ("Helvetica", 16)
@@ -68,12 +70,25 @@ class App(customtkinter.CTk):
         self.velocitySelect= customtkinter.CTkOptionMenu(self.leftFrame, values= wave_velocity_select_options, font= label_font)
         self.velocitySelect.grid(row=9, column= 0, padx= 15, pady=10, sticky= E+W+N+S)
 
-        self.panSwitch = customtkinter.CTkSwitch(self.leftFrame, font= label_font, text= "Directional Audio")
-        self.panSwitch.grid(row= 10 , column = 0, padx= 15, pady = 10, sticky= E+W+N+S)
+        #Label for BPM
+        self.bpmLabel = customtkinter.CTkLabel(self.leftFrame,font = label_font, text= "BPM:" , anchor= W )
+        self.bpmLabel.grid(row= 10, column= 0 , padx =15, pady= 0 , sticky= E+W+N+S)
 
+        #Slider to pick beats
+        self.bpmSlider = customtkinter.CTkSlider(self.leftFrame, from_= 30, to= 180, command= self.bpm_slider_callback)
+        self.bpmSlider.set(60)
+        self.bpmSlider.grid(row=11, column= 0, padx= 10, pady=10 , sticky= E+W+N+S)
+        
+        self.bpmSliderNum = customtkinter.CTkEntry(self.leftFrame, width= 60,font= label_font, placeholder_text= 60)
+        self.bpmSliderNum.bind("<Return>", self.bpm_input_callback)
+        self.bpmSliderNum.grid(row=11 , column= 1, padx=15, pady= 10, sticky= E+W+N+S)
+
+        #Pan Switch for selecting if pan is on or off
+        self.panSwitch = customtkinter.CTkSwitch(self.leftFrame, font= label_font, text= "Directional Audio")
+        self.panSwitch.grid(row= 12 , column = 0, padx= 15, pady = 10, sticky= E+W+N+S)
         #Begin Button
         self.button = customtkinter.CTkButton(self.leftFrame, text="Listen", font= label_font, command=self.start_button_callback)
-        self.button.grid(row = 11, column=0, padx=15, pady=20, sticky = E+W)
+        self.button.grid(row = 13, column=0, padx=15, pady=20, sticky = E+W)
 
         #Right Frame 
         self.rightFrame = customtkinter.CTkFrame(self)
@@ -82,10 +97,46 @@ class App(customtkinter.CTk):
         self.rightFrame.columnconfigure(0, weight=1)
 
     def start_button_callback(self):
+        data_source_dict = {"San Fransisco's Waves (Buoy)": 1 , "Davis Air Quality (Purple Air Sensor)": 2 , "Temperature In Room": 3}
         data_source = self.dataSelect.get()
-        notes_column = self.noteSelect.get()
+        note_column = self.noteSelect.get()
         velocity_column = self.velocitySelect.get()
+        start_date = self.startDateEntry.get_date()
+        start_date= str(start_date.year)+"-"+str(start_date.month)+"-"+str(start_date.day)
+        end_date = self.endDateEntry.get_date()
+        end_date= str(end_date.year)+"-"+str(end_date.month)+"-"+str(end_date.day)
         pan_switch = self.panSwitch.get()
+        bpm = int(self.bpmSlider.get())
+        print("here", bpm)
+        
+        #Convert Using Dictionary later
+        if note_column == "Height of Wave (Recommended)":
+            note_column = "significantWaveHeight"
+        if velocity_column == "Peak Period of Waves (Recommended)":
+            velocity_column = "peakPeriod"
+
+        if data_source_dict[data_source] == 1:
+            time_column = "meanPeriod"
+
+        data_to_midi.api_to_midi(start_date,end_date, "gui_to_midi",note_column,velocity_column, time_column, bpm) 
+
+    def bpm_slider_callback(self, event):
+        num = self.bpmSlider.get()
+        self.bpmSliderNum.delete(0,END)
+        self.bpmSliderNum.insert(0,int(num))
+
+    def bpm_input_callback(self, event):
+        num = self.bpmSliderNum.get()
+        if num>180:
+            self.bpmSliderNum.config(placeholder_text= num)
+        if num:
+            self.bpmSlider.set(int(num))
+            
+
+
+        
+
+
         
         
 
