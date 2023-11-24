@@ -6,8 +6,10 @@ import matplotlib.pylab as plt
 from sklearn.preprocessing import normalize
 import pygame
 from audiolazy import str2midi, midi2str
+import mido
 
-def df_to_midi(df, filename, note_column, velocity_column, time_column, bpm):
+def df_to_midi(df, note_column, velocity_column, time_column, bpm, pan_bool, **kwargs):
+    filename = "gui_to_midi"
     notes = ['C2','D2','E2','G2','A2',
              'C3','D3','E3','G3','A3',
              'C4','D4','E4','G4','A4']
@@ -49,14 +51,53 @@ def df_to_midi(df, filename, note_column, velocity_column, time_column, bpm):
     #create and save the midi file itself
     with open(filename + '.mid', "wb") as f:
         my_midi_file.writeFile(f)
+    
+    if pan_bool:
+        track_number = 1
+        angles = df[kwargs["pan_column"]]
+        adjusted_angles = map_value(angles, min(angles), max(angles), 30,97)
+        int_angles = adjusted_angles.astype("int")
+        add_pan(df, filename, track_number , int_angles)
 
-def api_to_midi( start, end, filename, note_column, velocity_column, time_column, bpm):
+def api_to_midi( start, end, note_column, velocity_column, time_column, bpm, pan_bool, **kwargs):
     api_df = get_data(index=1, lim=100, start=start, end=end)
     
-    df_to_midi(api_df,filename, note_column, velocity_column, time_column, bpm)
+    df_to_midi(api_df, note_column, velocity_column, time_column, bpm, pan_bool, **kwargs)
 
 
 def map_value(value, min_value, max_value, min_result, max_result):
      #maps value (or array of values) from one range to another
      result = min_result + (value - min_value)/(max_value - min_value)*(max_result - min_result)
      return result
+
+def add_pan(df, filename, track_number, pan_values):
+    mid = mido.MidiFile("gui_to_midi" + ".mid")
+    track = mid.tracks[track_number]
+    current_time = 0
+    index = 0
+    pan_index = 0
+    
+    for i in range(len(track)):
+        msg = track[i]
+
+        try:
+            if msg.type == "note_on":
+                # Calculate the panning value based on the note number
+                # Example: Panning based on note number (0 to 127)
+                        
+                panning_value = pan_values[pan_index]
+
+                if msg.time != 0:
+                        
+                    pan_control = mido.Message('control_change', channel=msg.channel, control=10, value= panning_value, time= msg.time)
+                    
+                
+                    track.insert(index+1, pan_control)
+                   
+                    if pan_index < len(pan_values)-1:
+                        pan_index+=1
+        except:
+            print("Skipping Message, Non 'Note On' Value")
+        index+=1
+    mid.save(filename+".mid")
+    return mid

@@ -3,6 +3,10 @@ from tkinter import *
 from tkcalendar import DateEntry
 import customtkinter
 from data_functions import data_to_midi
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from time import sleep
+import pygame
 
 
 date_font = ("Helvetica", 24)
@@ -96,6 +100,10 @@ class App(customtkinter.CTk):
         self.rightFrame.rowconfigure(0, weight=1)
         self.rightFrame.columnconfigure(0, weight=1)
 
+        self.fig, self.ax = plt.subplots()
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.rightFrame)
+        self.canvas.get_tk_widget().grid(row=0, column=0, padx=20, pady=20, sticky=E + W + N + S)
+
     def start_button_callback(self):
         data_source_dict = {"San Fransisco's Waves (Buoy)": 1 , "Davis Air Quality (Purple Air Sensor)": 2 , "Temperature In Room": 3}
         data_source = self.dataSelect.get()
@@ -105,7 +113,7 @@ class App(customtkinter.CTk):
         start_date= str(start_date.year)+"-"+str(start_date.month)+"-"+str(start_date.day)
         end_date = self.endDateEntry.get_date()
         end_date= str(end_date.year)+"-"+str(end_date.month)+"-"+str(end_date.day)
-        pan_switch = self.panSwitch.get()
+        pan_switch = bool(self.panSwitch.get())
         bpm = int(self.bpmSlider.get())
     
         #Convert Using Dictionary later
@@ -116,8 +124,33 @@ class App(customtkinter.CTk):
 
         if data_source_dict[data_source] == 1:
             time_column = "meanPeriod"
+            index = 1
 
-        data_to_midi.api_to_midi(start_date,end_date, "gui_to_midi",note_column,velocity_column, time_column, bpm) 
+        if pan_switch:
+            pan_column = "meanDirection"
+
+        else:
+            pan_column = False
+
+        df = data_to_midi.get_data(1,100, start_date, end_date)
+
+        time_x = df["meanPeriod"].values
+        note_y = df["significantWaveHeight"].values
+        for i in range(1,len(time_x)):
+            time_x[i] += time_x[i-1]
+            
+        spb = pow(bpm/60,-1)
+
+        data_to_midi.api_to_midi(start_date,end_date,note_column,velocity_column, time_column, bpm, pan_switch, pan_column= pan_column) 
+        pygame.init()
+        pygame.mixer.music.load("gui_to_midi" + '.mid')
+        pygame.mixer.music.play()
+        
+        for i in range(len(time_x) - 3):
+           self.rightFrame.after(int(spb * 1000), self.update_graph(time_x, note_y, i))
+
+        
+        
 
     def bpm_slider_callback(self, event):
         num = self.bpmSlider.get()
@@ -125,11 +158,25 @@ class App(customtkinter.CTk):
         self.bpmSliderNum.insert(0,int(num))
 
     def bpm_input_callback(self, event):
-        num = self.bpmSliderNum.get()
+        num = int(self.bpmSliderNum.get())
         if num>180:
             self.bpmSliderNum.config(placeholder_text= num)
         if num:
-            self.bpmSlider.set(int(num))    
+            self.bpmSlider.set(num)    
+
+    def update_graph(self,x,y, i):
+            plt.ylim([0,.5])
+
+            self.ax.clear() 
+            self.ax.plot(x[i:i+3], y[i:i+3])
+            self.ax.set_ylim([0, .5])
+
+            self.canvas.draw_idle()  
+            self.canvas.flush_events()
+            
+
+            
+
     
 app = App()
 app.mainloop()
