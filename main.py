@@ -1,11 +1,9 @@
-import tkinter as tk
 from tkinter import *
 from tkcalendar import DateEntry
 import customtkinter
 from data_functions import data_to_midi
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from time import sleep
 import pygame
 
 
@@ -149,9 +147,6 @@ class App(customtkinter.CTk):
         for i in range(len(time_x) - 3):
            self.rightFrame.after(int(spb * 1000), self.update_graph(time_x, note_y, i))
 
-        
-        
-
     def bpm_slider_callback(self, event):
         num = self.bpmSlider.get()
         self.bpmSliderNum.delete(0,END)
@@ -174,9 +169,5 @@ class App(customtkinter.CTk):
             self.canvas.draw_idle()  
             self.canvas.flush_events()
             
-
-            
-
-    
 app = App()
 app.mainloop()

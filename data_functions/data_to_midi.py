@@ -1,11 +1,6 @@
 from midiutil import MIDIFile 
-import pandas as pd
-import numpy as np
 from .sofar_api import get_data
-import matplotlib.pylab as plt
-from sklearn.preprocessing import normalize
-import pygame
-from audiolazy import str2midi, midi2str
+from audiolazy import str2midi
 import mido
 
 def df_to_midi(df, note_column, velocity_column, time_column, bpm, pan_bool, **kwargs):
