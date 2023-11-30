@@ -2,7 +2,7 @@ import customtkinter
 import tkinter
 from tkinter import *
 from time import sleep
-#from data_functions import data_to_midi
+from data_functions import data_to_midi
 
 
 class Graphic(customtkinter.CTk):
