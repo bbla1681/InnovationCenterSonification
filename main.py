@@ -4,6 +4,7 @@ import customtkinter
 from data_functions import data_to_midi
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from example import Graphic
 import pygame
 
 
@@ -35,7 +36,7 @@ class App(customtkinter.CTk):
         self.startLabel = customtkinter.CTkLabel(self.leftFrame, font = label_font, text="Start:", anchor=W)
         self.startLabel.grid(row=0, column = 0, padx=15,sticky = E+W+N+S)
         #Start Calendar
-        self.startDateEntry = DateEntry(self.leftFrame, font=date_font, firstweekday='monday')
+        self.startDateEntry = DateEntry(self.leftFrame, font=date_font, color="white")
         self.startDateEntry.grid(row=1, column = 0 , padx=30, pady = 15, sticky=E+W+N+S)
 
         #End Label
@@ -98,9 +99,21 @@ class App(customtkinter.CTk):
         self.rightFrame.rowconfigure(0, weight=1)
         self.rightFrame.columnconfigure(0, weight=1)
 
-        self.fig, self.ax = plt.subplots()
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.rightFrame)
-        self.canvas.get_tk_widget().grid(row=0, column=0, padx=20, pady=20, sticky=E + W + N + S)
+        #Wave Graphic      
+
+        self.wave_graphic = Graphic(self.rightFrame)
+        self.wave_graphic.grid(row=0, column = 0, sticky= E+W+N+S)
+        
+
+        #Graph
+        #self.fig, self.ax = plt.subplots()
+        #self.canvas = FigureCanvasTkAgg(self.fig, master=self.rightFrame)
+        #self.canvas.get_tk_widget().grid(row=0, column=0, padx=20, pady=20, sticky=E + W + N + S)
+
+        self.audio_controls_frame = customtkinter.CTkFrame(self.rightFrame)
+        self.audio_controls_frame.grid(row= 1, column = 0, sticky= E+W+N+S) 
+
+
 
     def start_button_callback(self):
         data_source_dict = {"San Fransisco's Waves (Buoy)": 1 , "Davis Air Quality (Purple Air Sensor)": 2 , "Temperature In Room": 3}
@@ -132,8 +145,11 @@ class App(customtkinter.CTk):
 
         df = data_to_midi.get_data(1,100, start_date, end_date)
 
-        time_x = df["meanPeriod"].values
+        time_x = df["meanPeriod"].values    
         note_y = df["significantWaveHeight"].values
+
+        print(note_y)
+
         for i in range(1,len(time_x)):
             time_x[i] += time_x[i-1]
             
@@ -143,9 +159,14 @@ class App(customtkinter.CTk):
         pygame.init()
         pygame.mixer.music.load("gui_to_midi" + '.mid')
         pygame.mixer.music.play()
+
+        self.colors = self.wave_graphic.create_colors(10,note_y)
+
+        self.wave_graphic.start_graphic(note_y, ((60000)/bpm)/10, self.colors)
+
         
-        for i in range(len(time_x) - 3):
-           self.rightFrame.after(int(spb * 1000), self.update_graph(time_x, note_y, i))
+        #for i in range(len(time_x) - 3):
+           #self.rightFrame.after(int(spb * 1000), self.update_graph(time_x, note_y, i))
 
     def bpm_slider_callback(self, event):
         num = self.bpmSlider.get()
