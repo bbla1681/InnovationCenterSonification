@@ -5,9 +5,7 @@ import mido
 
 def df_to_midi(df, note_column, velocity_column, time_column, bpm, pan_bool, **kwargs):
     filename = "gui_to_midi"
-    notes = ['C2','D2','E2','G2','A2',
-             'C3','D3','E3','G3','A3',
-             'C4','D4','E4','G4','A4']
+    notes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5']
     vel_min = 80
     vel_max = 127
     notes_vals = df[note_column].values
@@ -40,15 +38,25 @@ def df_to_midi(df, note_column, velocity_column, time_column, bpm, pan_bool, **k
         note_velocity = round(map_value(normalized_velocity[i],0,1,vel_min, vel_max)) 
         vel_data.append(note_velocity)
 
-    print(midi_data)
-
     #create midi file object, add tempo
-    my_midi_file = MIDIFile(1) #one track 
+    my_midi_file = MIDIFile(3) #Two track 
+    my_midi_file.addTempo(track=0, time=0, tempo=bpm)
     my_midi_file.addTempo(track=0, time=0, tempo=bpm) 
+
+    #Percusion Instrument
+    my_midi_file.addProgramChange(tracknum=0, channel=0, time=0, program=32)
+    #Bass Instrument
+    my_midi_file.addProgramChange(tracknum=0, channel=1, time=0, program=117)
+    #Melody
+    my_midi_file.addProgramChange(tracknum=0, channel=2, time=0, program=26)
 
     #add midi notes
     for i in range(len(t_data)):
-        my_midi_file.addNote(track=0, channel=0, time=t_data[i], pitch=midi_data[i], volume=vel_data[i], duration=2)
+        my_midi_file.addNote(track=0, channel=0, time=t_data[i], pitch=midi_data[i], volume=vel_data[i], duration=1)
+        my_midi_file.addNote(track=0, channel=1, time=t_data[i], pitch=midi_data[i], volume=vel_data[i], duration=1)
+        my_midi_file.addNote(track=0, channel=2, time=t_data[i], pitch=midi_data[i], volume=vel_data[i], duration=1)
+        
+    
     #create and save the midi file itself
     with open(filename + '.mid', "wb") as f:
         my_midi_file.writeFile(f)

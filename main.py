@@ -4,12 +4,12 @@ import customtkinter
 from data_functions import data_to_midi
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from example import Graphic
+from audio_visualize import Graphic
 import pygame
 
 
-date_font = ("Helvetica", 24)
-label_font = ("Helvetica", 16)
+date_font = ("Helvetica", 28)
+label_font = ("Helvetica", 24)
 
 data_select_options = ["San Fransisco's Waves (Buoy)", "Davis Air Quality (Purple Air Sensor)", "Temperature In Room"]
 wave_note_select_options = ["Height of Wave (Recommended)" , "Humidity", "Peak Period of Waves" , "Mean Period of Waves" ,  "Peak Direction of Wave"]
@@ -19,6 +19,8 @@ wave_velocity_select_options = ["Peak Period of Waves (Recommended)" , "Height o
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
+        customtkinter.set_default_color_theme("dark-blue")
+        
         #Window
         self.geometry("400x150")
         self.rowconfigure((0),weight=1)
@@ -27,17 +29,16 @@ class App(customtkinter.CTk):
         #Left Frame
         self.leftFrame = customtkinter.CTkFrame(self)
         self.leftFrame.grid(row=0, column = 0 , columnspan= 2, padx= 20, pady= 20, sticky=E+W+N+S)
-        self.leftFrame.rowconfigure((0), weight=0)
-        self.leftFrame.columnconfigure(0, weight= 1)
+        self.leftFrame.columnconfigure((0), weight= 1)
 
         #Left Frame Modules
 
         #Start Label
         self.startLabel = customtkinter.CTkLabel(self.leftFrame, font = label_font, text="Start:", anchor=W)
-        self.startLabel.grid(row=0, column = 0, padx=15,sticky = E+W+N+S)
+        self.startLabel.grid(row=0, column = 0, padx=15, pady= 15, sticky = E+W+N+S)
         #Start Calendar
         self.startDateEntry = DateEntry(self.leftFrame, font=date_font, color="white")
-        self.startDateEntry.grid(row=1, column = 0 , padx=30, pady = 15, sticky=E+W+N+S)
+        self.startDateEntry.grid(row=1, column = 0 ,columnspan=2, padx=30, pady = 15, sticky=E+W+N+S)
 
         #End Label
         self.endLabel = customtkinter.CTkLabel(self.leftFrame, font = label_font, text="End:", anchor=W)
@@ -45,7 +46,7 @@ class App(customtkinter.CTk):
 
         #End Calendar
         self.endDateEntry = DateEntry(self.leftFrame, font=date_font)
-        self.endDateEntry.grid(row=3, column = 0 , padx=30, pady=15, sticky= E+W+N+S)
+        self.endDateEntry.grid(row=3, column = 0 ,columnspan=2, padx=30, pady=15, sticky= E+W+N+S)
 
         #Dataset Label
         self.dataLabel = customtkinter.CTkLabel(self.leftFrame, font= label_font, text= "Data:", anchor= W)
@@ -53,7 +54,7 @@ class App(customtkinter.CTk):
 
         #Dataset Option Menu
         self.dataSelect = customtkinter.CTkOptionMenu(self.leftFrame, values=data_select_options, font= label_font)
-        self.dataSelect.grid(row= 5, column = 0, padx=15, pady=10, sticky = E+W+N+S) 
+        self.dataSelect.grid(row= 5, column = 0, columnspan=2, padx=15, pady=10, sticky = E+W+N+S) 
 
         #Parameters For Music
 
@@ -63,7 +64,7 @@ class App(customtkinter.CTk):
 
         #Label For Notes Select
         self.noteSelect = customtkinter.CTkOptionMenu(self.leftFrame, values = wave_note_select_options, font = label_font)
-        self.noteSelect.grid(row = 7, column= 0, padx= 15, pady=10 , sticky= E+W+N+S)
+        self.noteSelect.grid(row = 7, column= 0,columnspan=2, padx= 15, pady=10 , sticky= E+W+N+S)
 
         #Label for velocity
         self.velocityLabel= customtkinter.CTkLabel(self.leftFrame, font= label_font, text= "Veloctiy:", anchor= W)
@@ -71,7 +72,7 @@ class App(customtkinter.CTk):
         
         #Option menu for velocity select parameter
         self.velocitySelect= customtkinter.CTkOptionMenu(self.leftFrame, values= wave_velocity_select_options, font= label_font)
-        self.velocitySelect.grid(row=9, column= 0, padx= 15, pady=10, sticky= E+W+N+S)
+        self.velocitySelect.grid(row=9, column= 0,columnspan=2, padx= 15, pady=10, sticky= E+W+N+S)
 
         #Label for BPM
         self.bpmLabel = customtkinter.CTkLabel(self.leftFrame,font = label_font, text= "BPM:" , anchor= W )
@@ -87,15 +88,16 @@ class App(customtkinter.CTk):
         self.bpmSliderNum.grid(row=11 , column= 1, padx=15, pady= 10, sticky= E+W+N+S)
 
         #Pan Switch for selecting if pan is on or off
+        
         self.panSwitch = customtkinter.CTkSwitch(self.leftFrame, font= label_font, text= "Directional Audio")
-        self.panSwitch.grid(row= 12 , column = 0, padx= 15, pady = 10, sticky= E+W+N+S)
+        self.panSwitch.grid(row= 12 , column = 0, padx= 15, pady = 10, sticky= W+N+S)
         #Begin Button
         self.button = customtkinter.CTkButton(self.leftFrame, text="Listen", font= label_font, command=self.start_button_callback)
-        self.button.grid(row = 13, column=0, padx=15, pady=20, sticky = E+W)
+        self.button.grid(row = 13, column=0,columnspan=2, padx=15, pady=20, sticky = E+W)
 
         #Right Frame 
         self.rightFrame = customtkinter.CTkFrame(self)
-        self.rightFrame.grid(row= 0,column = 2, columnspan= 10, padx=20, pady=20, sticky=E+W+N+S)
+        self.rightFrame.grid(row= 0,column = 2, rowspan= 2,columnspan= 10, padx=20, pady=20, sticky=E+W+N+S)
         self.rightFrame.rowconfigure(0, weight=1)
         self.rightFrame.columnconfigure(0, weight=1)
 
@@ -103,15 +105,26 @@ class App(customtkinter.CTk):
 
         self.wave_graphic = Graphic(self.rightFrame)
         self.wave_graphic.grid(row=0, column = 0, sticky= E+W+N+S)
+        self.wave_graphic.canvas.configure(background="#292929", highlightthickness=0, relief="ridge")
         
-
         #Graph
-        #self.fig, self.ax = plt.subplots()
-        #self.canvas = FigureCanvasTkAgg(self.fig, master=self.rightFrame)
-        #self.canvas.get_tk_widget().grid(row=0, column=0, padx=20, pady=20, sticky=E + W + N + S)
+        '''
+        self.fig, self.ax = plt.subplots()
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.rightFrame)
+        self.canvas.get_tk_widget().grid(row=1, column=0, padx=20, pady=20, sticky=E + W + N + S)
+        '''
 
-        self.audio_controls_frame = customtkinter.CTkFrame(self.rightFrame)
-        self.audio_controls_frame.grid(row= 1, column = 0, sticky= E+W+N+S) 
+        #Initializing actions for updating graph so we have an object that we can cancel
+        self.graph_action = None
+
+        self.controlFrame = customtkinter.CTkFrame(self)
+        self.controlFrame.grid(row=1, column = 0 , columnspan= 2, padx= 20 , pady= 20, sticky = E+W+N+S)
+        self.controlFrame.rowconfigure(0, weight = 0)
+        self.controlFrame.columnconfigure(0, weight=0)
+
+
+        #self.audio_controls_frame = customtkinter.CTkFrame(self.controlFrame)
+        #self.audio_controls_frame.grid(row= 0, column = 0, sticky= E+W+N+S) 
 
 
 
@@ -148,8 +161,6 @@ class App(customtkinter.CTk):
         time_x = df["meanPeriod"].values    
         note_y = df["significantWaveHeight"].values
 
-        print(note_y)
-
         for i in range(1,len(time_x)):
             time_x[i] += time_x[i-1]
             
@@ -161,12 +172,14 @@ class App(customtkinter.CTk):
         pygame.mixer.music.play()
 
         self.colors = self.wave_graphic.create_colors(10,note_y)
+        
+        self.wave_graphic.cancel()
 
         self.wave_graphic.start_graphic(note_y, ((60000)/bpm)/10, self.colors)
 
         
         #for i in range(len(time_x) - 3):
-           #self.rightFrame.after(int(spb * 1000), self.update_graph(time_x, note_y, i))
+           #graph_action = self.rightFrame.after(int(spb * 1000), self.update_graph(time_x, note_y, i))
 
     def bpm_slider_callback(self, event):
         num = self.bpmSlider.get()
@@ -179,7 +192,7 @@ class App(customtkinter.CTk):
             self.bpmSliderNum.config(placeholder_text= num)
         if num:
             self.bpmSlider.set(num)    
-
+    """
     def update_graph(self,x,y, i):
             plt.ylim([0,.5])
 
@@ -189,6 +202,19 @@ class App(customtkinter.CTk):
 
             self.canvas.draw_idle()  
             self.canvas.flush_events()
+    """
+    def cancel_action(self):
+        if self.graph_action:
+            try:
+                data = self.tk.call('after', 'info', self.graph_action)
+                script = self.tk.splitlist(data)
+                print(script)
+                for item in script:
+                    self.deletecommand(item)
+                print(script, "HEre is ")
+            except TclError:
+                pass    
+            
             
 app = App()
 app.mainloop()

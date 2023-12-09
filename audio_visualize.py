@@ -1,28 +1,29 @@
 import customtkinter
-import tkinter
 from tkinter import *
-from time import sleep
-import matplotlib.colors
 #from data_functions import data_to_midi
 
 #GRAPHIC IS WORKING GRADIENT IS WORKING JUST NEED TO IMPLEMENT INTO MAIN 
 
 class Graphic(customtkinter.CTkFrame):
     def __init__(self, parent):
-        customtkinter.CTkFrame.__init__(self,parent)
+        customtkinter.CTkFrame.__init__(self, parent)
+        
         #Window
         self.rowconfigure(0,weight=1)
         self.columnconfigure(0,weight=1)
+
+        
         
         self.canvas = customtkinter.CTkCanvas(self)
+        
+        
         self.canvas.grid(column=0, row=0, sticky= E+W+N+S)
         self.canvas.columnconfigure((0,1,2,3,4,5,6,7,8,9), weight= 1)
         self.canvas.rowconfigure((0,1,2,3,4,5,6,7,8,9), weight= 1)
 
-        self.button = customtkinter.CTkButton(self, command= self.start_graphic)
-        self.button.grid(column= 0 , row= 1, sticky= E+W+N+S)
-
         self.hex_vals = []
+
+        self.schedule = None
 
         #create grid
         #for x in range(0,11):
@@ -30,19 +31,24 @@ class Graphic(customtkinter.CTkFrame):
             #self.canvas.create_line(0,int(self.winfo_height()*x * .10), self.winfo_width(), int(self.winfo_height() *x*.10))
 
     def start_graphic(self, notes, bpms_per_column, colors):
-        print("Clicked")
+        self.cancel()
         interval = 0
         for i in range(len(notes)):
             for x in range(10):
                 interval += bpms_per_column
-                self.after(int(interval) , lambda i=i, x=x: self.create_wave(i, x, colors))
+                self.schedule = self.after(int(interval) , lambda i=i, x=x: self.create_wave(i, x, colors))
 
     def create_wave(self, i,x,colors):
         self.canvas.delete("all")
         for y in range(0,10):
             index = y+(i*10)
-            self.canvas.create_rectangle(int(self.winfo_width() * x * .10), int(self.winfo_height() * y * .10) , int(self.winfo_width() * (x+1) * .10), int(self.winfo_height() * (y + 1) * .10),
-                                          fill= colors[index], outline= "black", tags= "Grid_Column")
+            self.canvas.create_rectangle(int(self.winfo_width() * x * .10),
+                                         int(self.winfo_height() * y * .10),
+                                         int(self.winfo_width() * (x+1) * .10), 
+                                         int(self.winfo_height() * (y + 1) * .10),
+                                         fill= colors[index], 
+                                         outline= "black", 
+                                         tags= "Grid_Column")
     def rgb_to_hex(self, r, g, b):
         return '#{:02x}{:02x}{:02x}'.format(r, g, b)
 
@@ -67,3 +73,15 @@ class Graphic(customtkinter.CTkFrame):
      #maps value (or array of values) from one range to another
      result = min_result + (value - min_value)/(max_value - min_value)*(max_result - min_result)
      return result
+
+    def cancel(self):
+       if self.schedule:
+        try:
+            data = self.tk.call('after', 'info', self.schedule)
+            script = self.tk.splitlist(data)[0]
+            for item in script:
+                self.deletecommand(item)
+                self.tk.call('after', 'cancel', self.schedule)
+        except TclError:
+            pass
+        
