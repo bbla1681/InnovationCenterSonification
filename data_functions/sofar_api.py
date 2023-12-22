@@ -1,6 +1,4 @@
 from pysofar.sofar import SofarApi
-from pysofar.spotter import Spotter
-from pysofar.__init__ import get_token
 import pandas as pd
 
 def get_data(index,lim,start,end):
