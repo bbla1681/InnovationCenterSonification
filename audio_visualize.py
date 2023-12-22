@@ -23,7 +23,7 @@ class Graphic(customtkinter.CTkFrame):
 
         self.hex_vals = []
 
-        self.schedule = None
+        self.schedule = []
 
         #create grid
         #for x in range(0,11):
@@ -36,7 +36,7 @@ class Graphic(customtkinter.CTkFrame):
         for i in range(len(notes)):
             for x in range(10):
                 interval += bpms_per_column
-                self.schedule = self.after(int(interval) , lambda i=i, x=x: self.create_wave(i, x, colors))
+                self.schedule.append(self.after(int(interval) , lambda i=i, x=x: self.create_wave(i, x, colors)))
 
     def create_wave(self, i,x,colors):
         self.canvas.delete("all")
@@ -53,10 +53,9 @@ class Graphic(customtkinter.CTkFrame):
         return '#{:02x}{:02x}{:02x}'.format(r, g, b)
 
     def create_colors(self, rows , notes):
-        print(notes)
         blue_vals = []
         for i in range(len(notes)):
-            blue_val = (int(self.map_value(notes[i], min(notes), max(notes), 20,255)))
+            blue_val = (int(self.map_value(notes[i], min(notes), max(notes), 40,255)))
             gradient_vals = []
             colors = []
             for i in range((int(rows/2))):
@@ -77,6 +76,8 @@ class Graphic(customtkinter.CTkFrame):
     def cancel(self):
        if self.schedule:
         try:
+            for i in range(len(self.schedule)):
+                self.after_cancel(self.schedule[i])
             data = self.tk.call('after', 'info', self.schedule)
             script = self.tk.splitlist(data)[0]
             for item in script:

@@ -3,23 +3,24 @@ from .sofar_api import get_data
 from audiolazy import str2midi
 import mido
 
-def df_to_midi(df, note_column, velocity_column, time_column, bpm, pan_bool, **kwargs):
+def df_to_midi(df, note_column, velocity_column, bpm, pan_bool, instruments, **kwargs):
     filename = "gui_to_midi"
     notes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5']
-    vel_min = 80
+    vel_min = 70
     vel_max = 127
     notes_vals = df[note_column].values
-    times = df[time_column].values
-    velocity_vals = df[velocity_column]  
-
-
+    velocity_vals = df[velocity_column].values
+    instruments_length = len(instruments)
+    t_data = []
     #Puts the time data into a sequence, one after another instead of having potentially overlapping values (4, 4 , 5) -> (4,8,13) creates a timeline
-    times[0] = bpm
-    for i in range(1,len(times)):
-        times[i] = times[i-1] + bpm
+    times = [bpm]
+    for i in range(1,len(notes_vals)):
+        times.append(times[i-1] + bpm)
 
     beats = len(times)
-    t_data = map_value(times, 0, max(times), 0,beats)
+
+    for time in times:
+        t_data.append(map_value(time, 0, max(times), 0,beats))
     
     normalized_velocity = map_value(velocity_vals, min(velocity_vals), max(velocity_vals), 0, 1)
     normalized_velocity = 1 - normalized_velocity
@@ -38,25 +39,14 @@ def df_to_midi(df, note_column, velocity_column, time_column, bpm, pan_bool, **k
         note_velocity = round(map_value(normalized_velocity[i],0,1,vel_min, vel_max)) 
         vel_data.append(note_velocity)
 
-    #create midi file object, add tempo
-    my_midi_file = MIDIFile(3) #Two track 
+    my_midi_file = MIDIFile(instruments_length)
     my_midi_file.addTempo(track=0, time=0, tempo=bpm)
-    my_midi_file.addTempo(track=0, time=0, tempo=bpm) 
 
-    #Percusion Instrument
-    my_midi_file.addProgramChange(tracknum=0, channel=0, time=0, program=32)
-    #Bass Instrument
-    my_midi_file.addProgramChange(tracknum=0, channel=1, time=0, program=117)
-    #Melody
-    my_midi_file.addProgramChange(tracknum=0, channel=2, time=0, program=26)
-
-    #add midi notes
-    for i in range(len(t_data)):
-        my_midi_file.addNote(track=0, channel=0, time=t_data[i], pitch=midi_data[i], volume=vel_data[i], duration=1)
-        my_midi_file.addNote(track=0, channel=1, time=t_data[i], pitch=midi_data[i], volume=vel_data[i], duration=1)
-        my_midi_file.addNote(track=0, channel=2, time=t_data[i], pitch=midi_data[i], volume=vel_data[i], duration=1)
-        
-    
+    for i in range(instruments_length):
+        my_midi_file.addProgramChange(tracknum=0, channel=i, time=0, program=instruments[i])
+        for j in range(len(t_data)):
+            my_midi_file.addNote(track=0, channel=i, time=t_data[j], pitch=midi_data[j], volume=vel_data[j], duration=1)
+         
     #create and save the midi file itself
     with open(filename + '.mid', "wb") as f:
         my_midi_file.writeFile(f)
@@ -68,10 +58,10 @@ def df_to_midi(df, note_column, velocity_column, time_column, bpm, pan_bool, **k
         int_angles = adjusted_angles.astype("int")
         add_pan(df, filename, track_number , int_angles)
 
-def api_to_midi( start, end, note_column, velocity_column, time_column, bpm, pan_bool, **kwargs):
+def api_to_midi( start, end, note_column, velocity_column, bpm, pan_bool, instruments, **kwargs):
     api_df = get_data(index=1, lim=100, start=start, end=end)
     
-    df_to_midi(api_df, note_column, velocity_column, time_column, bpm, pan_bool, **kwargs)
+    df_to_midi(api_df, note_column, velocity_column, bpm, pan_bool, instruments, **kwargs)
 
 
 def map_value(value, min_value, max_value, min_result, max_result):
