@@ -6,14 +6,14 @@ from selenium.webdriver.common.action_chains import ActionChains
 from time import sleep
 import os
 
-def scrape_air_data(sensor):
+def scrape_air_data(path, sensor):
     options = webdriver.ChromeOptions() 
 
     options.add_argument("--headless")
 
     prefs = {"profile.default_content_settings.popups": 0,
                 "download.default_directory": 
-                            r"C:\Users\bbla1\Projects\sonification\Wave Branch\InnovationCenterSonification\purple_data\\",#IMPORTANT - ENDING SLASH '\\' IMPORTANT
+                            path,#IMPORTANT - ENDING SLASH '\\' IMPORTANT
                 "directory_upgrade": True}
     options.add_experimental_option("prefs", prefs)
 

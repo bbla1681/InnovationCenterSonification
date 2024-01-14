@@ -133,6 +133,7 @@ sound_names = [
     'Gunshot'
 ]
 
+dataset_names = ["San Fransisco's Waves (Buoy)", "FLC Air Quality (Purple Air Sensor)"]
 label_font = ("Helvetica", 40)
 
 class Sound_Editor(customtkinter.CTkFrame,):
@@ -150,17 +151,18 @@ class Sound_Editor(customtkinter.CTkFrame,):
 
         self.main_frame = customtkinter.CTkFrame(self)
         self.main_frame.grid(row= 1, column = 0, padx= 20, pady=20 , sticky = NSEW)
-        self.main_frame.columnconfigure((0), weight= 1)
+        self.main_frame.columnconfigure((0,1), weight= 1)
         self.main_frame.rowconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13), weight=1)
         
         self.add_channel = customtkinter.CTkButton(self.main_frame, text= "Add Channel", command=self.add_channel_callback)
-        self.add_channel.grid(row=0, column= 0, padx= 20, pady=20, sticky = N+E)
+        self.add_channel.grid(row=0, column= 2, padx= 20, pady=20, sticky = N+E)
 
         self.delete_channel = customtkinter.CTkButton(self.main_frame, text= "Delete Channel", command= self.delete_channel_callback)
-        self.delete_channel.grid(row= 0, column = 1, padx = 20 , pady = 20, sticky = N+E )
+        self.delete_channel.grid(row= 0, column = 3, padx = 20 , pady = 20, sticky = N+E )
 
         self.drop_downs = []
         self.channel_labels = []
+        self.data_assign = []
 
         if "channels" in kwargs:
             self.channels = kwargs['channels']
@@ -169,7 +171,9 @@ class Sound_Editor(customtkinter.CTkFrame,):
                     self.channel_labels.append(customtkinter.CTkLabel(self.main_frame, text="Channel " + str(channel+1) + ": "))
                     self.channel_labels[channel].grid(row= channel*2,column = 0, pady=0,sticky= W)
                     self.drop_downs.append(customtkinter.CTkOptionMenu(self.main_frame, values= sound_names))
-                    self.drop_downs[channel].grid(row=channel*2+1, column= 0, pady=0, columnspan=2, sticky= E+W)
+                    self.drop_downs[channel].grid(row=channel*2+1, column= 0, padx=5, columnspan=3, sticky= E+W)
+                    self.data_assign.append(customtkinter.CTkOptionMenu(self.main_frame, values = dataset_names))
+                    self.data_assign[channel].grid(row=channel*2+1, column= 3, pady=5, sticky= E+W)
                     self.get_instruments()
         else:
             self.channels = 0
@@ -177,12 +181,11 @@ class Sound_Editor(customtkinter.CTkFrame,):
 
         if 'instruments' in kwargs:
             self.instruments = kwargs['instruments']
-            for i in range(len(self.instruments)):
-                self.drop_downs[i].set(sound_names[self.instruments[i]])
+            self.instrument_assign = kwargs['instrument_assignment']
 
-        else:
-            self.instruments = 0
-            self.drop_downs[0].set(sound_names[0])
+            for i in range(len(self.instruments_and_assignments)):
+                self.drop_downs[i].set(sound_names[self.instruments[i]])
+                self.data_assign[i].set(dataset_names[self.instrument_assign[i]])
         
 
     def add_channel_callback(self): 
@@ -192,7 +195,9 @@ class Sound_Editor(customtkinter.CTkFrame,):
             self.channel_labels.append(customtkinter.CTkLabel(self.main_frame, text="Channel " + str(self.channels) + ": "))
             self.channel_labels[index].grid(row= index*2,column = 0, pady=0,sticky= W)
             self.drop_downs.append(customtkinter.CTkOptionMenu(self.main_frame, values= sound_names))
-            self.drop_downs[index].grid(row=index*2+1, column= 0, columnspan= 2, pady=0, sticky= E+W)
+            self.drop_downs[index].grid(row=index*2+1, column= 0, columnspan= 3, padx=5, sticky= E+W)
+            self.data_assign.append(customtkinter.CTkOptionMenu(self.main_frame, values = dataset_names))
+            self.data_assign[index].grid(row=index*2+1, column= 3, padx=5, sticky= E+W)
 
     def delete_channel_callback(self):
         if self.channels > 1:
@@ -201,15 +206,22 @@ class Sound_Editor(customtkinter.CTkFrame,):
             self.drop_downs.pop(index)
             self.channel_labels[index].destroy()
             self.channel_labels.pop(index)
+            self.data_assign[index].destroy()
+            self.data_assign.pop(index)
             self.channels -= 1 
 
     def get_instruments(self):
         self.instruments = []
+        self.instrument_assign = []
+        self.instruments_and_assignments = []
         if self.drop_downs is None:
             return [0]
         for i in range(len(self.drop_downs)):
             self.instruments.append(sound_names.index(self.drop_downs[i].get()))
-        return self.instruments
+            self.instrument_assign.append(dataset_names.index(self.data_assign[i].get()))
+        self.instruments_and_assignments.append(self.instruments)
+        self.instruments_and_assignments.append(self.instrument_assign)
+        return self.instruments_and_assignments
           
     def get_channel_count(self):
         return self.channels

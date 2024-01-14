@@ -1,7 +1,7 @@
 from pysofar.sofar import SofarApi
 import pandas as pd
 
-def get_data(index,lim,start,end):
+def get_data(index,start,end):
     wave_heights = []
     api = SofarApi()
 
@@ -15,7 +15,7 @@ def get_data(index,lim,start,end):
     #spt_1_dat_freq = spt_1.latest_data(include_directional_moments=True)
 
     #Grabbbing Data by date and by key of waves
-    spt_1_query = spt_1.grab_data( limit=lim, start_date=start, end_date=end)
+    spt_1_query = spt_1.grab_data(start_date=start, end_date=end, limit = None)
     wave_data = spt_1_query["waves"]
 
     #Append and return data as a pandas dataframe

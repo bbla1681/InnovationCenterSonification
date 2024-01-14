@@ -85,4 +85,6 @@ class Graphic(customtkinter.CTkFrame):
                 self.tk.call('after', 'cancel', self.schedule)
         except TclError:
             pass
+
+    
         
